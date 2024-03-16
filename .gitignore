@@ -1,0 +1,7 @@
+# Ignore IDE and build files
+out
+.idea
+
+# Auxiliary
+linear-algebra/Main.java
+linear-algebra/tensor/table.txt

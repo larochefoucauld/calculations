@@ -3,7 +3,7 @@ package tensor.util;
 /**
  * Обёртка над числовым типом
  * (многоиндексный объект нулевой размерности)
-  */
+ */
 public class Scalar extends MultiindexObject {
     public double value;
 

@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- * Абстракия, реализующая основные опреации тензорной алгебры.
+ * Абстракция, реализующая основные опреации тензорной алгебры.
  * Координаты тензора хранятся в разработанной для этой цели
  * многоиндексной коллекции, обращение к ним осуществляется по набору индексов.
  * Перебор координат для выполнения вычислений осуществляется при помощи
@@ -115,28 +115,20 @@ public class Tensor {
             throw new IllegalArgumentException("Invalid symmetrizing mask");
         }
         Tensor res = new Tensor(p, q, n);
-        // Перебираем все монотонные (по симметризуемым позициям)
-        // наборы индексов
-        for (int[] i : IndexFactory.generateMonotonic(permutable, n)) {
+        // Перебираем все наборы индексов
+        for (int[] i : IndexFactory.generateAll(arity, n)) {
             double cur = 0; // текущий результат
-            // Перебираем все перестановки данного монотонного набора
+            // Перебираем все перестановки данного набора
             // по симметризуемым позициям
             for (int[] p : Permutations.generate(permutable)) {
                 // Суммируем координаты исходного тензора
                 cur += coordinates.access(
-                                Permutations.substitute(p, i)
-                        ).value;
-            }
-            // Устанавливаем координаты, индексируемые всеми
-            // перестановками текущего монотонного
-            // набора равными вычисленному значению
-            // для монотонного набора, пользуясь симметричностью
-            // симметризованного тензора
-            for (int[] p : Permutations.generateAll(arity)) {
-                res.coordinates.access(
                         Permutations.substitute(p, i)
-                ).value = cur;
+                ).value;
             }
+            // Записываем посчитанное значение в результат по
+            // соответствующим индексам
+            res.coordinates.access(i).value = cur;
         }
         // Вычисляем коэффициент нормировки и домножаем на него результат
         int count = 0;
@@ -183,8 +175,8 @@ public class Tensor {
             // набора через <знак перестановки> * <вычисленное значение
             // для монотонного набора>, пользуясь антисимметричностью
             // альтернированного тензора
-            for (int[] p : Permutations.generateAll(arity)) {
-                int parity = Permutations.getParity(p);
+            for (int[] p : Permutations.generate(permutable)) {
+                int parity = Permutations.getParity(p, permutable);
                 res.coordinates.access(
                         Permutations.substitute(p, i)
                 ).value = parity * cur;
@@ -247,6 +239,16 @@ public class Tensor {
      */
     public Tensor multiply(Scalar value) {
         coordinates.multiply(value);
+        return this;
+    }
+
+    public Tensor add(Tensor rhs) {
+        if (rhs.n != n || rhs.p != p || rhs.q != q) {
+            throw new IllegalArgumentException("Invalid operand");
+        }
+        for (int[] i : IndexFactory.generateAll(arity, n)) {
+            coordinates.access(i).value += rhs.coordinates.access(i).value;
+        }
         return this;
     }
 
@@ -352,9 +354,9 @@ public class Tensor {
             res.append(decomposition.get(ind));
             res.append(" ").append("[");
             for (int i = 0; i < ind.length - 1; i++) {
-                res.append(ind[i]).append(", ");
+                res.append(ind[i] + 1).append(", ");
             }
-            res.append(ind[ind.length - 1]).append("]\n");
+            res.append(ind[ind.length - 1] + 1).append("]\n");
         }
         return res.toString();
     }

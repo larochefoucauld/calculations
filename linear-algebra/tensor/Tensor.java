@@ -176,10 +176,9 @@ public class Tensor {
             // для монотонного набора>, пользуясь антисимметричностью
             // альтернированного тензора
             for (int[] p : Permutations.generate(permutable)) {
-                int parity = Permutations.getParity(p, permutable);
                 res.coordinates.access(
                         Permutations.substitute(p, i)
-                ).value = parity * cur;
+                ).value = Permutations.getParity(p, permutable) * cur;
             }
         }
         // Вычисляем коэффициент нормировки и домножаем на него результат
@@ -188,6 +187,19 @@ public class Tensor {
             if (b) count++;
         }
         res.multiply(new Scalar(1.0 / factorial(count)));
+        return res;
+    }
+
+    /**
+     * Транспонирует тензор, преобразуя индексы в соответствии с переданной перестановкой
+     */
+    public Tensor transpose(int[] permutation) {
+        Tensor res = new Tensor(p, q, n);
+        for (int[] i : IndexFactory.generateAll(arity, n)) {
+            res.coordinates.access(
+                    Permutations.substitute(permutation, i)
+            ).value = coordinates.access(i).value;
+        }
         return res;
     }
 
@@ -242,6 +254,9 @@ public class Tensor {
         return this;
     }
 
+    /**
+     * Прибавляет к тензору другой тензор
+     */
     public Tensor add(Tensor rhs) {
         if (rhs.n != n || rhs.p != p || rhs.q != q) {
             throw new IllegalArgumentException("Invalid operand");

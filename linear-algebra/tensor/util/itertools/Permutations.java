@@ -72,11 +72,12 @@ public class Permutations {
      * в соответствии с переданной перестановкой первых n
      * неотрицательных целых чисел
      */
-    public static int[] substitute(int[] permutation, final int[] names) {
+    public static int[] substitute(final int[] permutation, final int[] names) {
+        int[] res = new int[permutation.length];
         for (int i = 0; i < permutation.length; i++) {
-            permutation[i] = names[permutation[i]];
+            res[i] = names[permutation[i]];
         }
-        return permutation;
+        return res;
     }
 
     /**
